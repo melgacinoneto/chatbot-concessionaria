@@ -1,0 +1,840 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "content": "#  CONCESSIONÁRIA",
+        "height": 80,
+        "width": 358,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        320,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "165d8e92-8d5f-4834-af24-bc624a7c82eb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=<agent name=\"AgenteOrquestrador\" domain=\"Shineray Belem\">\n  <identity>\n    Você é o Agente Orquestrador da concessionária.  \n    Seu papel é identificar a intenção do cliente, direcionar para o agente especializado correto e manter a continuidade da conversa sem confundir o cliente.  \n    Você guarda o histórico de qual agente respondeu por último e avalia se a próxima mensagem deve permanecer com esse agente ou se deve ser redirecionada para outro.  \n    Você nunca responde como agente final, apenas organiza o fluxo.\n<identity>\n    Você é o único ponto de contato direto com o cliente.  \n    Os agentes especialistas não falam diretamente com o cliente — apenas com você.  \n    Sua responsabilidade é analisar a intenção do cliente, encaminhar a mensagem para o agente correto, receber a resposta dele e repassar fielmente essa resposta ao cliente sem modificá-la.  \n  </identity>\n\n  <objectives>\n    <item>Entender a intenção da mensagem do cliente.</item>\n    <item>Comparar a intenção atual com o agente que respondeu por último.</item>\n    <item>Manter o cliente no mesmo agente, sempre que a nova mensagem ainda estiver relacionada ao contexto anterior.</item>\n    <item>Encaminhar para um novo agente somente quando for identificada uma mudança clara de intenção.</item>\n    <item>Garantir continuidade e fluidez, sem que o cliente perceba a troca de agentes.</item>\n  </objectives>\n\n  <contextManagement>\n    <rule>Armazene o último agente que respondeu ao cliente.</rule>\n    <rule>Analise a nova mensagem e compare com o tema tratado anteriormente.</rule>\n    <rule>Se a mensagem for continuação ou detalhe da conversa atual, mantenha no mesmo agente.</rule>\n    <rule>Se a mensagem indicar uma nova intenção distinta, redirecione para o agente apropriado.</rule>\n    <rule>Se houver ambiguidade, peça esclarecimento educado antes de decidir.</rule>\n  </contextManagement>\n\n  <routingRules>\n    <rule>Guardar o histórico das interações de cada agente para manter contexto e coerência no atendimento.</rule>\n    <rule>Antes de redirecionar, analisar a última resposta recebida e decidir se a nova mensagem deve ir para o mesmo agente ou para outro especializado.</rule>\n    <rule>Nunca inventar respostas: sempre usar o conteúdo gerado pelos agentes especialistas.</rule>\n    <rule>Manter um fluxo natural e contínuo na conversa com o cliente, mesmo sendo apenas o repassador das respostas.</rule>\n    <rule>Se nenhuma intenção clara for detectada, encaminhar para o Agente Fallback & Esclarecimentos.</rule>\n \n    <rule>\n      <intencao>Dúvidas técnicas sobre motos.</intencao>\n      <destino>Agente Técnico</destino>\n    </rule>\n    <rule>\n      <intencao>Questões financeiras ou de pagamento.</intencao>\n      <destino>Agente Financeiro</destino>\n    </rule>\n    <rule>\n      <intencao>Desejo de falar diretamente com vendedor humano.</intencao>\n      <destino>Agente Handoff & Vendedores</destino>\n    </rule>\n    <rule>\n      <intencao>Agendamento de visita ou test ride.</intencao>\n      <destino>Agente Agenda</destino>\n    </rule>\n    <rule>\n      <intencao>Mensagem confusa ou fora de escopo.</intencao>\n      <destino>Agente Fallback & Esclarecimentos</destino>\n    </rule>\n  </routingRules>\n\n  <rules>\n    <rule>Nunca invente informações, apenas gerencie contexto e direcionamento.</rule>\n    <rule>Preserve a naturalidade da conversa: o cliente não deve perceber a troca de agentes.</rule>\n    <rule>Se múltiplas intenções forem detectadas, dê prioridade à mais urgente ou relevante.</rule>\n    <rule>Quando transferir para um novo agente, forneça também o resumo do histórico para que ele tenha contexto.</rule>\n  </rules>\n\n  <examples>\n    <example id=\"contexto-tecnico\">\n      <user>Essa moto tem painel digital?</user>\n      <orquestrador>Encaminhar para Agente Técnico.</orquestrador>\n      <user>Ela também tem freio a disco?</user>\n      <orquestrador>Manter com Agente Técnico (continuação do mesmo tema).</orquestrador>\n    </example>\n    <example id=\"mudanca-para-financeiro\">\n      <user>Esse modelo tem freio ABS?</user>\n      <orquestrador>Encaminhar para Agente Técnico.</orquestrador>\n      <user>Quanto fica a parcela no financiamento?</user>\n      <orquestrador>Trocar para Agente Financeiro (nova intenção).</orquestrador>\n    </example>\n    <example id=\"handoff\">\n      <user>Gostei, quero fechar a compra agora.</user>\n      <orquestrador>Encaminhar para Agente Handoff & Vendedores.</orquestrador>\n    </example>\n    <example id=\"agenda\">\n      <user>Quero fazer um test ride sábado à tarde.</user>\n      <orquestrador>Encaminhar para Agente Agenda.</orquestrador>\n    </example>\n    <example id=\"fallback\">\n      <user>Vocês acreditam em astrologia?</user>\n      <orquestrador>Encaminhar para Agente Fallback & Esclarecimentos.</orquestrador>\n    </example>\n  </examples>\n</agent>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        352
+      ],
+      "id": "0c3a631a-baf8-4ed4-8d53-85767a19f3a4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        528
+      ],
+      "id": "eca0a546-d031-49f3-8a18-2d7f46db340a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "2JoTTQ6VYYAThdXx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        528
+      ],
+      "id": "6db3a046-e7c8-4354-aa71-7da1e295401f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "IfI6UA3179D84lPl",
+          "mode": "list",
+          "cachedResultName": "Fallback"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Pergunta": "={{ $('When chat message received').item.json.chatInput }}",
+            "SessionID": "={{ $('When chat message received').item.json.sessionId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Pergunta",
+              "displayName": "Pergunta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "SessionID",
+              "displayName": "SessionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        784
+      ],
+      "id": "03e8561e-ac1f-48b6-8372-1ba4776000c8",
+      "name": "AgentedeFallbackeEsclarecimentos"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "cPgsxEHRMC6zD4Fv",
+          "mode": "list",
+          "cachedResultName": "Agenda"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Pergunta": "={{ $('When chat message received').item.json.chatInput }}",
+            "SessionID": "={{ $json.sessionId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Pergunta",
+              "displayName": "Pergunta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "SessionID",
+              "displayName": "SessionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        496,
+        784
+      ],
+      "id": "537359c9-d7d4-4418-8a47-08dd78fe0505",
+      "name": "AgenteDeAgenda"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ELpGiZVsqvVxv4MJ",
+          "mode": "list",
+          "cachedResultName": "Vendedores"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Pergunta": "={{ $('When chat message received').item.json.chatInput }}",
+            "seasonID": "={{ $json.sessionId }}"
+          },
+          "matchingColumns": [
+            "Pergunta"
+          ],
+          "schema": [
+            {
+              "id": "Pergunta",
+              "displayName": "Pergunta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "seasonID",
+              "displayName": "seasonID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        784
+      ],
+      "id": "bf8a7b0f-fb92-4399-a6ac-6571ccb34a26",
+      "name": "AgenteHandoffEVendedores"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZBD4pbKBPXyKlhJh",
+          "mode": "list",
+          "cachedResultName": "Financeiro"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Pergunta1": "={{ $('When chat message received').item.json.chatInput }}",
+            "SessionID": "={{ $('When chat message received').item.json.sessionId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Pergunta1",
+              "displayName": "Pergunta1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "SessionID",
+              "displayName": "SessionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        784
+      ],
+      "id": "7d9b3822-2e2d-495d-a31e-65fd967e8fbe",
+      "name": "AgenteFinanceiro"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.last_input_text }}",
+                    "rightValue": "https://",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    },
+                    "id": "440b30b7-aaaf-4cb1-be60-a89f0a0218f0"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9baaf70e-1f2c-4d87-83b8-76e287f2e0ad",
+                    "leftValue": "={{ $json.body.last_input_text }}",
+                    "rightValue": ".ogg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2d29b324-ed65-4e5f-843c-bac6924f5dc8",
+                    "leftValue": "={{ $json.body.last_input_text }}",
+                    "rightValue": "=.jpeg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Imagem"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -304,
+        384
+      ],
+      "id": "287ea5e1-b49d-4c7e-aeda-a3dd81791610",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        112,
+        256
+      ],
+      "id": "bfa0084f-8596-407d-9177-56ea6d508822",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "2JoTTQ6VYYAThdXx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook1').item.json.body.last_input_text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        256
+      ],
+      "id": "8ecab20a-6087-4e6e-8a14-f71d96053cf4",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook1').item.json.body.last_input_text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        480
+      ],
+      "id": "04341bb7-815a-43f3-a800-a2bec1dba089",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "pzueZERuQlHgp6Nt",
+          "mode": "list",
+          "cachedResultName": "técnico"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "SessionID": "={{ $json.sessionId }}",
+            "Pergunta": "={{ $('When chat message received').item.json.chatInput }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Pergunta",
+              "displayName": "Pergunta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "SessionID",
+              "displayName": "SessionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        784
+      ],
+      "id": "cde59b37-2426-4e7c-bb6d-5f7320da8902",
+      "name": "agenteTecnico"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.manychat.com/fb/subscriber/setCustomField",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 321772167697439:cb91e627396cfcbda33ec7107360ed6c"
+            },
+            {
+              "name": "Content",
+              "value": "application-json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "subscriber_id",
+              "value": "={{ $('Webhook1').item.json.body.id }}"
+            },
+            {
+              "name": "field_id",
+              "value": "13555564"
+            },
+            {
+              "name": "field_value",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        352
+      ],
+      "id": "2e37d780-6a51-4ba2-88af-64cd4958abc7",
+      "name": "Define o campo de usuário com a Resposta do Agente1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.manychat.com/fb/sending/sendFlow",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 321772167697439:cb91e627396cfcbda33ec7107360ed6c"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"subscriber_id\": {{ $('Webhook1').item.json.body.id }},\n  \"flow_ns\": \"content20250821011002_372235\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1072,
+        352
+      ],
+      "id": "500d6e07-97e9-4abd-bb11-431d8fb147a2",
+      "name": "Envia o Fluxo do Manychat1"
+    },
+    {
+      "parameters": {
+        "content": "## Envia para o Manychat\n",
+        "height": 432,
+        "width": 544
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        752,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "da2236c0-d5dd-42c8-9635-e52725c4560d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Importante\n- Colocar a variável do contato do cliente antes de mandar para o time de vendedores.\n- Refinar os prompts de agendamento.",
+        "height": 256,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        928
+      ],
+      "typeVersion": 1,
+      "id": "3ce2ec5b-8546-4d8f-a471-05a8169f5c1e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Importante\n- Colocar a variável do contato do cliente antes de mandar para o time de vendedores.\n- Refinar o formato de mensagem.",
+        "height": 256,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        928
+      ],
+      "typeVersion": 1,
+      "id": "36d43297-8ce2-4316-b497-6ee51a72be19",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3ed94bc1-bf1e-4509-83b1-788c6bff5365",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -544,
+        288
+      ],
+      "id": "cbc3f2fb-0320-4913-bcbe-768e05c13169",
+      "name": "Webhook1",
+      "webhookId": "3ed94bc1-bf1e-4509-83b1-788c6bff5365"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        400
+      ],
+      "id": "55866a89-da1c-4610-be28-68c94dc1c56c",
+      "name": "When chat message received",
+      "webhookId": "0e6b9608-28cc-4c75-8358-c54587657629"
+    },
+    {
+      "parameters": {
+        "content": "## Entradas",
+        "height": 432,
+        "width": 272,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "7499c7ec-7fc8-4d94-922e-4814b1ca82c1",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Filtros",
+        "height": 432,
+        "width": 576,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -320,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "58a801b3-cb6d-4bf5-bfed-24346e8a554c",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Maestro\n",
+        "height": 432,
+        "width": 464,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        272,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "ea46cda8-340c-498f-bd69-90e203f733dd",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Agentes Especializados",
+        "height": 208,
+        "width": 768,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        272,
+        720
+      ],
+      "typeVersion": 1,
+      "id": "2ea5641a-1eec-4cfe-a8da-990a31c8536d",
+      "name": "Sticky Note7"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgentedeFallbackeEsclarecimentos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgenteDeAgenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgenteHandoffEVendedores": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgenteFinanceiro": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agenteTecnico": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define o campo de usuário com a Resposta do Agente1": {
+      "main": [
+        [
+          {
+            "node": "Envia o Fluxo do Manychat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9a039713f257ec3ef724f71164f951e9c35d9b89dce2a3492cb1f204a2b86c2"
+  }
+}
