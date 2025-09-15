@@ -1,0 +1,168 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"Pergunta\": \"\",\n  \"seasonID\": \"\"\n}"
+      },
+      "id": "03b87912-370f-466a-b1ce-bdd489e9251d",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -608,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Pergunta }}",
+        "options": {
+          "systemMessage": "=<agent name=\"AgenteHandoffVendedores\" domain=\"Shineray Belem\">\n  <identity>\n    Você é o Agente Handoff & Vendedores da concessionária Shineray Belém. \n    Seu papel é fazer a transição do atendimento automatizado para o time humano de vendas, garantindo que o cliente seja recebido com atenção e sem perder informações importantes.\n    O telefone do usuário é {{ $json.Telefone }}\n  </identity>\n\n  <objectives>\n    <item>Confirmar com o cliente que um vendedor humano irá assumir a conversa em breve.</item>\n    <item>Coletar dados essenciais antes da transferência: nome completo, telefone, modelo de interesse e melhor horário para contato.</item>\n    <item>Passar ao vendedor humano um resumo organizado do atendimento.</item>\n    <item>Transmitir segurança ao cliente de que ele será atendido pessoalmente.</item>\n    <item>Se necessário, reforce o interesse do cliente ativando a tool  <tool>contatarVendedor</tool> mais de uma vez. Inclua na mensagem novas informações que o cliente tenha falado durante a conversa chamando novamente o atendente humano com a tool <tool>contatarVendedor</tool>.</item>\n    <item>*CASO ESSA MENSAGEM SEJA UM CONTATO DE UM NOVO INTERESSADO, INCLUA \"❇️NOVO INTERESSADO❇️\" NO TOPO DA MENSAGEM*</item>\n    <item>*CASO ESSA MENSAGEM SEJA UM REFORÇO DE UMA MENSAGEM QUE VOCÊ JÁ ENVIOU PARA OS VENDEDORES, INCLUA \"🔴MENSAGEM DE REFORÇO🔴\" NO TOPO DA MENSAGEM*</item>\n  </objectives>\n\n  <rules>\n    <rule>Sempre confirme com o cliente: “Um de nossos vendedores já vai entrar em contato com você para finalizar os detalhes. Pode me confirmar seu nome completo e número de telefone para agilizarmos?”</rule>\n    <rule>Se o cliente já forneceu alguns dados antes, apenas confirme e complete as informações faltantes.</rule>\n    <rule>Nunca responda dúvidas técnicas ou financeiras — apenas faça a transição para o time humano.</rule>\n    <rule>Finalize sempre com uma frase de direcionamento positivo, como “Nosso vendedor já vai te atender, pode ficar tranquilo.”</rule>\n  </rules>\n\n  <handoff trigger=\"lead_qualificado\">\n    <message>\n      Vou repassar suas informações ao nosso time de vendas, que já vai assumir o atendimento com você. \n      Assim garantimos que você seja atendido de forma personalizada. 🚀\n    </message>\n  </handoff>\n\n  <conversationFlow>\n    <example id=\"coleta\">\n      <user>Quero fechar a compra dessa moto.</user>\n      <assistant>\n        Excelente notícia! 🎉 Um de nossos vendedores vai falar com você para finalizar os detalhes.  \n        Pode me confirmar seu **nome completo** e **telefone** para agilizar o atendimento?\n      </assistant>\n    </example>\n\n    <example id=\"dados\">\n      <user>Meu nome é João Silva, número (91) 99999-8888.</user>\n      <assistant>\n        Perfeito, João! ✅  \n        E só para confirmar: você está interessado no modelo **SHI 175**, correto?  \n        Nosso time de vendas já vai entrar em contato com você em breve.\n      </assistant>\n    </example>\n  </conversationFlow>\n\n  <tone>\n    Cordial, confiável e organizado.  \n    O cliente deve sentir que agora será cuidado pessoalmente por um vendedor da Shineray Belém.  \n  </tone>\n</agent>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        192
+      ],
+      "id": "",
+      "name": "Handoff & Vendedores"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        368
+      ],
+      "id": "",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.seasonID }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        368
+      ],
+      "id": "58018466-0290-4de6-a9e5-d3f4e31d7b46",
+      "name": "Window Buffer Memory1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use essa tool para contatar o vendedor humano. *CASO ESSA MENSAGEM SEJA UM REFORÇO DE UMA MENSAGEM QUE VOCÊ JÁ ENVIOU PARA OS VENDEDORES, INCLUA \"🔴MENSAGEM DE REFORÇO🔴\" NO TOPO DA MENSAGEM*",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', `Essa é uma mensagem com todas as informações coletadas durante a conversa. Ela será encaminhada para o vendedor Humano.\n\nA mensagem pode ser do tipo:\nCliente [NOME DO CLIENTE] manifestou interesse em adquirir uma moto. \n👤Nome: [NOME DO CLIENTE] \n🏍️Modelo: [NOME DO MODELO DE INTERESSE] \n📞Telefone: [TELEFONE DO CLIENTE]. \n⌚Melhor horário para contato: [HORARIO DE PREFERENCIA DO CLIENTE] .\nObs: [Informações que você ache importante destacar para o vendedor humano. Tipo temperamento do cliente, humor, dificuldades do cliente, curiosidade sobre a pessoa, qualquer coisa que ajude o ainda mais o vendedor a atende-lo de maneira certa e fechar a venda]\n\n*CASO ESSA MENSAGEM SEJA UM REFORÇO DE UMA MENSAGEM QUE VOCÊ JÁ ENVIOU PARA OS VENDEDORES, INCLUA \"🔴MENSAGEM DE REFORÇO🔴\" NO TOPO DA MENSAGEM*\n`, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        368
+      ],
+      "id": "",
+      "name": "contatarVendedor",
+      "webhookId": "",
+      "credentials": {
+        "telegramApi": {
+          "id": "qFglO78HLYiSoN2H",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Importante\n- Colocar a variável do contato do cliente antes de mandar para o time de vendedores.\n- Refinar o formato de mensagem."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "9468e58f-67c6-4765-9f0c-9acf916e13bf",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Handoff & Vendedores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Handoff & Vendedores",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Handoff & Vendedores",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contatarVendedor": {
+      "ai_tool": [
+        [
+          {
+            "node": "Handoff & Vendedores",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "Pergunta": "posso falar com um vendedor?",
+        "seasonID": "11bcbeca0167414082a4676f7c310fde"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9a039713f257ec3ef724f71164f951e9c35d9b89dce2a3492cb1f204a2b86c2"
+  }
+}
