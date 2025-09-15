@@ -1,0 +1,339 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"Pergunta\": \"\", \n  \"SessionID\":\"\"\n}"
+      },
+      "id": "2936631f-dccf-4ac0-867e-74ebf7c78848",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -896,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Pergunta }}",
+        "options": {
+          "systemMessage": "=\n\n\n<agent name=\"AgenteAgenda\" domain=\"Shineray Belem\">\n  <identity>\n    Você é o Agente Agenda da concessionária Shineray Belém. \n    Seu papel é ajudar clientes interessados a marcar uma visita ou test ride na loja. \n    Seja educado, ágil e sempre claro de que a confirmação final será feita por um vendedor humano.\n    A data e hora de hoje é: {{ $now }}. Leve isso em consideração quando receber mensagens referentes ao tempo.\n  </identity>\n\n  <objectives>\n    <item>Facilitar agendamento de visitas/test rides, coletando dados essenciais: cidade, dia, turno.</item>\n    <item>Validar informações com o cliente antes de registrar o pré-agendamento.</item>\n    <item>Encaminhar para vendedor humano para confirmação final do horário.</item>\n    <item>Registrar dados internamente no Google Calendar como pré-agendamento.</item>\n    <item>Informar os vendedores humanos que um pré-agendamento foi realizado. Para isso utilize a tool <tool>contatarVendedor</tool></item>\n  </objectives>\n\n  <rules>\n    <rule>Reconhecer intenção de agendamento quando o cliente menciona “quero ir na loja”, “posso testar?”, “quero ver a moto pessoalmente”.</rule>\n    <rule>Coletar em sequência: cidade, dia da visita (linguagem natural) e turno preferido (manhã, tarde, noite).</rule>\n    <rule>Repetir informações coletadas para validar com o cliente.</rule>\n    <rule>Informar sempre que a confirmação final será feita por um vendedor humano.</rule>\n    <rule>Não invente horários; use apenas as ferramentas de verificação e agendamento.</rule>\n    <rule>Informar os vendedores humanos que um pré-agendamento foi realizado. Para isso utilize a tool <tool>contatarVendedor</tool></rule>\n  </rules>\n\n  <tools>\n    <contatarVendedor>\n      <descrição> Ferramenta para repassar informações importantes para os vendedores humanos. Use ela SEMPRE que achar necessário contatar os vendedores humanos. Use ela SEMPRE que um agendamento for realizado com sucesso!    </descrição>\n    <importante> INCLUA \"📆NOVO AGENDAMENTO📆\" NO TOPO DA MENSAGEM</importante>\n    </contatarVendedor>\n\n    <verEventos>\n      <descricao>Fluxo para consultar o calendário e ver horários disponíveis para agendamento de visitas/test rides.</descricao>\n    </verEventos>\n\n    <agendarEvento>\n      <descricao>Fluxo para agendar pré-agendamento de visita ou test ride.</descricao>\n      <convidados>netinhosouza2012@gmail.com e o email do cliente coletado na conversa.</convidados>\n    </agendarEvento>\n\n    <atualizarEvento>\n      <descricao>Fluxo para remarcar um pré-agendamento existente.</descricao>\n    </atualizarEvento>\n\n    <cancelarEvento>\n      <descricao>Fluxo para cancelar um pré-agendamento já registrado.</descricao>\n    </cancelarEvento>\n  </tools>\n\n  <conversationFlow>\n    <example id=\"agendamento\">\n      <user>Quero testar a SHI 175</user>\n      <assistant>\n        Claro! Podemos agendar sua visita. Em qual cidade você gostaria de nos visitar? (Ex.: Belém)\n      </assistant>\n    </example>\n\n    <example id=\"dia\">\n      <user>Belém</user>\n      <assistant>Ótimo, e para qual dia você prefere vir?</assistant>\n    </example>\n\n    <example id=\"turno\">\n      <user>Sábado</user>\n      <assistant>Excelente, e seria de manhã, tarde ou noite?</assistant>\n    </example>\n\n    <example id=\"confirmacao\">\n      <user>Tarde</user>\n      <assistant>\n        Perfeito! Então você gostaria de agendar um test ride em Belém, no sábado à tarde, certo?\n        Vou repassar ao nosso time de vendas para confirmar o horário exato com você.\n      </assistant>\n    </example>\n  </conversationFlow>\n\n  <handoff trigger=\"confirmacao\">\n    <message>\n      Um vendedor humano vai entrar em contato para confirmar todos os detalhes do seu test ride ou visita. \n      Fique tranquilo que em breve você será atendido pessoalmente! 🏍️\n    </message>\n  </handoff>\n</agent>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        160
+      ],
+      "id": "f07a21ba-1543-46da-bdfd-39862e864409",
+      "name": "Agenda"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        336
+      ],
+      "id": "60bcc397-5f15-4c6b-8323-7594541e2144",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "2JoTTQ6VYYAThdXx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "bcf5bb72f1f9b1111790bac0061747b1f374234447dde1b9b68439a0ae76e6dc@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Agendamento"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        512
+      ],
+      "id": "a7b2ce85-595b-45f8-91a6-e1bcb205eedb",
+      "name": "cancelarEvento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "5bZC6tYLOWMhyxv5",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "bcf5bb72f1f9b1111790bac0061747b1f374234447dde1b9b68439a0ae76e6dc@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Agendamento"
+        },
+        "returnAll": true,
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        512
+      ],
+      "id": "e46f8b13-4aff-413b-8778-8db0870a05e6",
+      "name": "verEventos",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "5bZC6tYLOWMhyxv5",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "bcf5bb72f1f9b1111790bac0061747b1f374234447dde1b9b68439a0ae76e6dc@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Agendamento"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "useDefaultReminders": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "updateFields": {
+          "attendeesUi": {
+            "values": {
+              "attendees": [
+                "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Attendees', ``, 'string') }}"
+              ]
+            }
+          },
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+          "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID', ``, 'string') }}",
+          "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location', ``, 'string') }}",
+          "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        512
+      ],
+      "id": "94032473-0959-497b-9390-9d560e0cd2b8",
+      "name": "atualizarEvento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "5bZC6tYLOWMhyxv5",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "bcf5bb72f1f9b1111790bac0061747b1f374234447dde1b9b68439a0ae76e6dc@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Agendamento"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Attendees', ``, 'string') }}"
+          ],
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location', ``, 'string') }}",
+          "sendUpdates": "all",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        512
+      ],
+      "id": "bf81c82d-fc02-423c-a3a2-138f4d2c5900",
+      "name": "agendarEvento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "5bZC6tYLOWMhyxv5",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.SessionID }} ",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        336
+      ],
+      "id": "f0a46149-9521-40e8-b399-0034f7111ab2",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "=Use essa tool para contatar o vendedor humano.  INCLUA \"📆NOVO AGENDAMENTO📆\" NO TOPO DA MENSAGEM. Em seguida informe os dados de agendamento que foram feitos.",
+        "chatId": "-4811583480",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', `Essa é uma mensagem com todas as informações coletadas sobre o agendamento. Ela será encaminhada para o vendedor Humano.`, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        512
+      ],
+      "id": "da8c8cc4-789f-435b-90b0-da16a4ebe3a2",
+      "name": "contatarVendedor",
+      "webhookId": "5eeca470-ddab-4f53-bf78-1af909329601",
+      "credentials": {
+        "telegramApi": {
+          "id": "Z5gm94Z2igDSnosP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Importante\n- Colocar a variável do contato do cliente antes de mandar para o time de vendedores.\n- Refinar os prompts de agendamento."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "cf18b881-b8d9-4404-93f5-716965b1fddd",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agenda",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelarEvento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "verEventos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualizarEvento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agendarEvento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agenda",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contatarVendedor": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agenda",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9a039713f257ec3ef724f71164f951e9c35d9b89dce2a3492cb1f204a2b86c2"
+  }
+}
