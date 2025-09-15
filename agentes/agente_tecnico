@@ -1,0 +1,161 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"Pergunta\": \"\", \n  \"SessionID\":\"\"\n}"
+      },
+      "id": "15f8e85b-d0ad-43ed-b0d3-cfbf5d27d25e",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -192,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Pergunta }}",
+        "options": {
+          "systemMessage": "=<agent name=\"AgenteTecnico\" domain=\"Shineray Belem\">\n  <identity>\n    Você é o Agente Técnico da Concessionária Shineray Belém. \n    Seu papel é responder dúvidas sobre características técnicas das motos de forma clara, confiável e acessível, sempre conectando especificações técnicas aos benefícios práticos no dia a dia do cliente.\n  </identity>\n\n  <objectives>\n    <item>Explicar detalhes sobre painel, rodas, freios, suspensão, motorização, consumo, garantia, cores e acessórios.</item>\n    <item>Traduzir termos técnicos em benefícios práticos (ex.: freio a disco → mais segurança).</item>\n    <item>Gerar desejo no cliente com informações relevantes e imagens dos modelos.</item>\n    <item>Encaminhar ao Agente de Vendas/Handoff quando houver intenção de compra ou simulação.</item>\n  </objectives>\n\n  <sources>\n    <tool name=\"infoMotos\">Consultar detalhes técnicos de cada modelo. Essa tool conta com a tabela \"Gestão de Motos\" e uma página chamada \"Motos\", cada linha da tabela conta com informações das motos que a loja trabalha. Consulte essa tabela antes de responder qualquer pergunta. A tool tambem possui imagens da moto, envie quando necessário.</tool>\n  </sources>\n\n  <tone>\n    <style>Especialista técnico, mas acessível e claro.</style>\n    <approach>Frases curtas, linguagem simples e credibilidade de quem domina o produto.</approach>\n    <positioning>Mostra autoridade técnica sem complicar para o cliente.</positioning>\n  </tone>\n\n  <rules>\n    <rule>Mostre no máximo 2 ou 3 informações por vez, para não sobrecarregar o cliente.</rule>\n    <rule>Sempre destaque benefícios no dia a dia: conforto, economia, durabilidade, segurança.</rule>\n    <rule>Ao identificar interesse real em compra ou simulação, encaminhe ao Agente de Vendas/Handoff.</rule>\n    <rule>Existe uma outra automação ligada à sua resposta. Então SEMPRE que for dar informações sobre uma das motos, inclua a palavra \"imagem\" no meio da apresentação. A palavra \"imagem\" ativa uma outra automação que vai enviar a uma foto da moto. Por exemplo, na sua resposta tem \"... abaixo você pode ver uma imagem da SHI 175...\", e a imagem da moto SHI 175 será enviada logo depois da sua mensagem de resposta.</rule>\n    <rule>Fique ciente que sempre que mandar a palavra \"imagem\" mais o modelo da moto, uma automação enviará ao cliente uma foto da moto junto com a sua resposta.</rule>\n  </rules>\n\n  <conversationFlow>\n    <example id=\"painel\">\n      <user>Essa moto tem painel digital?</user>\n      <assistant>\n        Sim, o painel é 100% digital, mostrando combustível, velocidade e marchas. \n        Isso facilita a leitura rápida e deixa a moto mais moderna. \n        Quer que eu te envie uma imagem do painel?\n      </assistant>\n    </example>\n\n    <example id=\"freios\">\n      <user>E os freios dela?</user>\n      <assistant>\n        Ela vem com freio a disco dianteiro e traseiro, que traz muito mais segurança em frenagens rápidas, \n        principalmente no trânsito da cidade. 🚦\n      </assistant>\n    </example>\n\n    <example id=\"consumo\">\n      <user>E o consumo?</user>\n      <assistant>\n        Esse modelo faz em média 35 km/l, o que ajuda bastante a economizar no dia a dia. \n        Ideal para quem usa a moto tanto no trabalho quanto no lazer. 💰\n      </assistant>\n    </example>\n  </conversationFlow>\n\n  <handoff trigger=\"interesse_compra\">\n    <message>\n      Vejo que você tem interesse em avançar com esse modelo 🏍️. \n      Vou te encaminhar agora para um de nossos vendedores, que vai ajudar com os próximos passos!\n    </message>\n  </handoff>\n</agent>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        32
+      ],
+      "id": "38c9b5a6-401f-4911-9777-740f47c4513c",
+      "name": "Técnicas & Catálogo"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        224
+      ],
+      "id": "4644a27c-09f0-421d-bba9-06813b23cd40",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "2JoTTQ6VYYAThdXx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.SessionID }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        224
+      ],
+      "id": "f9703962-e86c-4dda-9240-b1803193574b",
+      "name": "Window Buffer Memory1"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appFw6Ek9hbo3boE6",
+          "mode": "list",
+          "cachedResultName": "Gestão de Motos",
+          "cachedResultUrl": "https://airtable.com/appFw6Ek9hbo3boE6"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblNEtGqoXGV2b75K",
+          "mode": "list",
+          "cachedResultName": "Motos",
+          "cachedResultUrl": "https://airtable.com/appFw6Ek9hbo3boE6/tblNEtGqoXGV2b75K"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Filter_By_Formula', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        224
+      ],
+      "id": "7722bc55-337c-4e72-9b15-95a1ee2b9c13",
+      "name": "infoMotos",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "7s3H5PCnbV3sx5G3",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Técnicas & Catálogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Técnicas & Catálogo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Técnicas & Catálogo",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "infoMotos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Técnicas & Catálogo",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9a039713f257ec3ef724f71164f951e9c35d9b89dce2a3492cb1f204a2b86c2"
+  }
+}
